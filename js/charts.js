@@ -25,6 +25,8 @@ const chartColors = {
 function initCharts() {
     if (!app.filteredData) return;
     
+    console.log('🎯 Initializing charts with real data:', app.filteredData.length, 'records');
+    
     // Create charts
     createStatusChart();
     createInspectionChart();
@@ -34,6 +36,10 @@ function initCharts() {
     
     // Create sparklines for metric cards
     createSparklines();
+    
+    // Mark charts as initialized
+    window.chartsInitialized = true;
+    console.log('✅ All charts initialized with real data');
 }
 
 // Update all charts with filtered data

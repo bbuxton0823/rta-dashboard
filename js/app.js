@@ -27,10 +27,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
     
-    // Initialize charts with dummy data for testing
-    initChartsWithDummyData();
-    
-    // Load data or use dummy data if needed
+    // Load real data first
     loadDataOrUseDummy();
     
     // Initialize date range picker
@@ -50,7 +47,8 @@ function loadDataOrUseDummy() {
             return response.json();
         })
         .then(data => {
-            console.log('Data loaded successfully:', data);
+            console.log('✅ Real data loaded successfully! Records:', data.main_data.length);
+            console.log('First record:', data.main_data[0]);
             app.data = data;
             app.filteredData = [...data.main_data];
             
@@ -70,7 +68,7 @@ function loadDataOrUseDummy() {
             populateFormDropdowns();
         })
         .catch(error => {
-            console.error('Error loading data:', error);
+            console.error('❌ Error loading real data:', error);
             showAlert('Using sample data for demonstration. Real data could not be loaded.', 'warning');
             
             // Use dummy data
@@ -80,7 +78,7 @@ function loadDataOrUseDummy() {
 
 // Use dummy data when JSON loading fails
 function useDummyData() {
-    console.log('Using dummy data');
+    console.log('⚠️ Falling back to dummy data');
     
     // Create sample data structure
     const dummyData = {
