@@ -52,11 +52,24 @@ function loadDataOrUseDummy() {
             app.data = data;
             app.filteredData = [...data.main_data];
             
+            // Debug: Log what we're about to update
+            console.log('📊 About to update dashboard with', app.filteredData.length, 'records');
+            
             // Initialize filters
             populateFilterDropdowns();
             
             // Initialize dashboard
             updateDashboard();
+            
+            // Double-check the dashboard was updated
+            setTimeout(() => {
+                const totalApps = document.getElementById('totalApplications').textContent;
+                console.log('🔍 Dashboard total applications shows:', totalApps);
+                if (totalApps === 'Loading...' || totalApps === '1,120') {
+                    console.warn('⚠️ Dashboard may not have updated properly, trying again...');
+                    updateDashboard();
+                }
+            }, 100);
             
             // Initialize charts with real data
             initCharts();

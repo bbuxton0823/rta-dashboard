@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Real Data - RTA Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .metric { margin: 10px 0; padding: 10px; border: 1px solid #ccc; }
+        .loading { color: #666; }
+        .success { color: green; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Real Data Test</h1>
+    
+    <div class="metric">
+        <strong>Total Applications:</strong> 
+        <span id="totalApplications" class="loading">Loading...</span>
+    </div>
+    
+    <div class="metric">
+        <strong>Approval Rate:</strong> 
+        <span id="approvalRate" class="loading">Loading...</span>
+    </div>
+    
+    <div class="metric">
+        <strong>Avg Processing Days:</strong> 
+        <span id="avgProcessingDays" class="loading">Loading...</span>
+    </div>
+    
+    <div class="metric">
+        <strong>Pending Inspections:</strong> 
+        <span id="pendingInspections" class="loading">Loading...</span>
+    </div>
+    
+    <div id="debug"></div>
+    
+    <script>
+        console.log('🔍 Test page loading...');
+        
+        // Global app object like the main dashboard
+        const app = {
+            data: null,
+            filteredData: null
+        };
+        
+        // Load data exactly like main app
+        fetch('./rta_data.json')
+            .then(response => {
+                console.log('📡 Response status:', response.status);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('✅ Real data loaded! Records:', data.main_data.length);
+                console.log('First record:', data.main_data[0]);
+                
+                app.data = data;
+                app.filteredData = [...data.main_data];
+                
+                // Calculate metrics exactly like main dashboard
+                updateMetrics();
+                
+                document.getElementById('debug').innerHTML = `
+                    <h3>✅ Data loaded successfully!</h3>
+                    <p>Records: ${data.main_data.length}</p>
+                    <p>First person: ${data.main_data[0]['First Name']} ${data.main_data[0]['Last Name']}</p>
+                    <p>Date: ${data.main_data[0]['Date RTA Received by HACSCM']}</p>
+                `;
+            })
+            .catch(error => {
+                console.error('❌ Error:', error);
+                document.getElementById('debug').innerHTML = `<p class="error">❌ Error: ${error.message}</p>`;
+            });
+        
+        function updateMetrics() {
+            if (!app.filteredData) return;
+            
+            console.log('📊 Updating metrics with', app.filteredData.length, 'records');
+            
+            // Total applications
+            document.getElementById('totalApplications').textContent = app.filteredData.length;
+            document.getElementById('totalApplications').className = 'success';
+            
+            // Calculate approval rate
+            const approvedCount = app.filteredData.filter(record => record['Date RTA Approved']).length;
+            const approvalRate = app.filteredData.length > 0 ? Math.round((approvedCount / app.filteredData.length) * 100) : 0;
+            document.getElementById('approvalRate').textContent = approvalRate + '%';
+            document.getElementById('approvalRate').className = 'success';
+            
+            // Calculate average processing days
+            let totalDays = 0;
+            let countWithDays = 0;
+            
+            app.filteredData.forEach(record => {
+                const receiveDate = new Date(record['Date RTA Received by HACSCM']);
+                let endDate;
+                
+                if (record['Date RTA Approved']) {
+                    endDate = new Date(record['Date RTA Approved']);
+                } else if (record['RTA Denial Reason']) {
+                    endDate = record['Date to Fiscal'] ? new Date(record['Date to Fiscal']) : null;
+                }
+                
+                if (receiveDate && endDate && !isNaN(receiveDate) && !isNaN(endDate)) {
+                    const days = Math.round((endDate - receiveDate) / (1000 * 60 * 60 * 24));
+                    if (days >= 0 && days < 1000) {
+                        totalDays += days;
+                        countWithDays++;
+                    }
+                }
+            });
+            
+            const avgDays = countWithDays > 0 ? Math.round(totalDays / countWithDays) : 0;
+            document.getElementById('avgProcessingDays').textContent = avgDays;
+            document.getElementById('avgProcessingDays').className = 'success';
+            
+            // Calculate pending inspections
+            const pendingInspectionCount = app.filteredData.filter(record => 
+                record['Inspector'] && 
+                !record['Inspection Date'] && 
+                !record['Date RTA Approved'] && 
+                !record['RTA Denial Reason']
+            ).length;
+            
+            document.getElementById('pendingInspections').textContent = pendingInspectionCount;
+            document.getElementById('pendingInspections').className = 'success';
+            
+            console.log('✅ Metrics updated!');
+        }
+    </script>
+</body>
+</html>

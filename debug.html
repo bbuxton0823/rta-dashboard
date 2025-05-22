@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Data Loading</title>
+</head>
+<body>
+    <h1>Debug Data Loading</h1>
+    <div id="results"></div>
+    
+    <script>
+        console.log('🔍 Starting debug test');
+        
+        fetch('./rta_data.json')
+            .then(response => {
+                console.log('📡 Fetch response status:', response.status);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('✅ Data loaded successfully!');
+                console.log('📊 Total records:', data.main_data.length);
+                console.log('👤 First record name:', data.main_data[0]['First Name'], data.main_data[0]['Last Name']);
+                console.log('🏢 First record program:', data.main_data[0]['Program']);
+                console.log('📅 First record date:', data.main_data[0]['Date RTA Received by HACSCM']);
+                
+                // Update the page
+                document.getElementById('results').innerHTML = `
+                    <p><strong>✅ Real data loaded successfully!</strong></p>
+                    <p>Total records: ${data.main_data.length}</p>
+                    <p>First record: ${data.main_data[0]['First Name']} ${data.main_data[0]['Last Name']}</p>
+                    <p>Program: ${data.main_data[0]['Program']}</p>
+                    <p>Date: ${data.main_data[0]['Date RTA Received by HACSCM']}</p>
+                `;
+            })
+            .catch(error => {
+                console.error('❌ Error loading data:', error);
+                document.getElementById('results').innerHTML = `
+                    <p><strong>❌ Error loading data:</strong> ${error.message}</p>
+                `;
+            });
+    </script>
+</body>
+</html>
