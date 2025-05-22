@@ -12,6 +12,9 @@ function initDataEntryForm() {
     
     // Initialize event listeners
     setupFormEventListeners();
+    
+    // Populate form dropdowns with real data
+    populateFormDropdowns();
 }
 
 // Set up form validation rules
@@ -20,10 +23,10 @@ function setupFormValidation() {
     const form = document.getElementById('rtaForm');
     
     form.addEventListener('submit', function(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        
         if (!form.checkValidity()) {
-            event.preventDefault();
-            event.stopPropagation();
-            
             // Add validation styling
             form.classList.add('was-validated');
             
@@ -32,6 +35,9 @@ function setupFormValidation() {
         } else {
             // Clear validation styling for next use
             form.classList.remove('was-validated');
+            
+            // Save the new record
+            saveNewRecord(form);
         }
     });
     
@@ -267,6 +273,101 @@ function saveEditedFormData(originalRecord) {
         showAlert('Record updated successfully!', 'success');
     } else {
         showAlert('Error updating record. Please try again.', 'danger');
+    }
+}
+
+// Save new record from form
+function saveNewRecord(form) {
+    // Get form data
+    const formData = new FormData(form);
+    
+    // Create new record object matching the Excel data structure
+    const newRecord = {
+        'First Name': document.getElementById('firstName').value,
+        'Last Name': document.getElementById('lastName').value,
+        'Type of MI': document.getElementById('miType').value,
+        'Program': document.getElementById('programCode').value,
+        'Date RTA Received by HACSCM': document.getElementById('receiveDate').value,
+        'Date RTA Assigned to Inspector': document.getElementById('assignDate').value,
+        'Inspector': document.getElementById('inspector').value,
+        'Property Address': document.getElementById('propertyAddress').value,
+        'City Code': document.getElementById('cityCode').value,
+        'BR Size': document.getElementById('brSize').value,
+        'Proposed Contract Rent': document.getElementById('contractRent').value,
+        'Security Deposit Amount': document.getElementById('securityDeposit').value,
+        'Inspection Date': document.getElementById('inspectionDate').value,
+        'Inspection Result': document.getElementById('inspectionResult').value,
+        'Date RTA Approved': '',
+        'RTA Denial Reason': '',
+        'Landlord Name': document.getElementById('landlordName').value
+    };
+    
+    // Add to data arrays
+    app.data.main_data.push(newRecord);
+    app.filteredData.push(newRecord);
+    
+    // In a real application, you would send this to a server to save to Excel/database
+    // For now, we'll save to localStorage as a backup
+    try {
+        const existingData = JSON.parse(localStorage.getItem('rta_new_records') || '[]');
+        existingData.push({
+            ...newRecord,
+            timestamp: new Date().toISOString()
+        });
+        localStorage.setItem('rta_new_records', JSON.stringify(existingData));
+        
+        // Also update the full dataset in localStorage
+        localStorage.setItem('rta_full_data', JSON.stringify(app.data));
+        
+        console.log('Record saved to localStorage');
+    } catch (error) {
+        console.error('Error saving to localStorage:', error);
+    }
+    
+    // Update dashboard displays
+    updateDashboard();
+    updateCharts();
+    populateDataTable();
+    
+    // Reset form
+    form.reset();
+    form.classList.remove('was-validated');
+    
+    // Show success message
+    showAlert('New RTA record added successfully! Record has been saved locally.', 'success');
+    
+    // Scroll to the new record in the table
+    setTimeout(() => {
+        const tableSection = document.querySelector('#rtaTable');
+        if (tableSection) {
+            tableSection.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, 500);
+}
+
+// Export data to download (for backing up new records)
+function exportNewRecords() {
+    try {
+        const newRecords = JSON.parse(localStorage.getItem('rta_new_records') || '[]');
+        if (newRecords.length === 0) {
+            showAlert('No new records to export.', 'info');
+            return;
+        }
+        
+        const dataStr = JSON.stringify(newRecords, null, 2);
+        const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+        
+        const exportFileDefaultName = `rta_new_records_${new Date().toISOString().split('T')[0]}.json`;
+        
+        const linkElement = document.createElement('a');
+        linkElement.setAttribute('href', dataUri);
+        linkElement.setAttribute('download', exportFileDefaultName);
+        linkElement.click();
+        
+        showAlert(`Exported ${newRecords.length} new records to ${exportFileDefaultName}`, 'success');
+    } catch (error) {
+        console.error('Error exporting records:', error);
+        showAlert('Error exporting records.', 'danger');
     }
 }
 
