@@ -77,6 +77,9 @@ function loadDataOrUseDummy() {
             // Populate data table
             populateDataTable();
             
+            // Populate program details table
+            populateProgramDetailsTable();
+            
             // Populate form dropdowns
             populateFormDropdowns();
         })
@@ -1284,6 +1287,99 @@ function formatCurrency(value) {
     if (isNaN(number)) return value;
     
     return '$' + number.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+}
+
+// Populate program details table
+function populateProgramDetailsTable() {
+    if (!app.filteredData) return;
+    
+    console.log('📊 Populating program details table...');
+    
+    // Group data by program
+    const programStats = {};
+    
+    app.filteredData.forEach(record => {
+        const program = record['Program'] || 'Unknown';
+        
+        if (!programStats[program]) {
+            programStats[program] = {
+                total: 0,
+                approved: 0,
+                denied: 0,
+                pending: 0,
+                totalDays: 0,
+                recordsWithDays: 0
+            };
+        }
+        
+        programStats[program].total++;
+        
+        // Count status
+        if (record['Date RTA Approved']) {
+            programStats[program].approved++;
+        } else if (record['RTA Denial Reason']) {
+            programStats[program].denied++;
+        } else {
+            programStats[program].pending++;
+        }
+        
+        // Calculate processing days
+        if (record['Date RTA Received by HACSCM']) {
+            const receiveDate = new Date(record['Date RTA Received by HACSCM']);
+            let endDate;
+            
+            if (record['Date RTA Approved']) {
+                endDate = new Date(record['Date RTA Approved']);
+            } else if (record['RTA Denial Reason'] && record['Date to Fiscal']) {
+                endDate = new Date(record['Date to Fiscal']);
+            }
+            
+            if (receiveDate && endDate && !isNaN(receiveDate) && !isNaN(endDate)) {
+                const days = Math.round((endDate - receiveDate) / (1000 * 60 * 60 * 24));
+                if (days >= 0 && days < 1000) {
+                    programStats[program].totalDays += days;
+                    programStats[program].recordsWithDays++;
+                }
+            }
+        }
+    });
+    
+    // Convert to array and sort by total applications
+    const programArray = Object.keys(programStats).map(program => {
+        const stats = programStats[program];
+        const avgDays = stats.recordsWithDays > 0 ? Math.round(stats.totalDays / stats.recordsWithDays) : 0;
+        const approvalRate = stats.total > 0 ? Math.round((stats.approved / stats.total) * 100) : 0;
+        
+        return {
+            program,
+            total: stats.total,
+            approved: stats.approved,
+            denied: stats.denied,
+            pending: stats.pending,
+            approvalRate,
+            avgDays
+        };
+    }).sort((a, b) => b.total - a.total);
+    
+    // Populate table
+    const tbody = document.getElementById('programDetailsBody');
+    tbody.innerHTML = '';
+    
+    programArray.forEach(item => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td><strong>${item.program}</strong></td>
+            <td>${item.total}</td>
+            <td><span class="badge bg-success">${item.approved}</span></td>
+            <td><span class="badge bg-danger">${item.denied}</span></td>
+            <td><span class="badge bg-warning">${item.pending}</span></td>
+            <td>${item.approvalRate}%</td>
+            <td>${item.avgDays} days</td>
+        `;
+        tbody.appendChild(row);
+    });
+    
+    console.log(`✅ Program details table populated with ${programArray.length} programs`);
 }
 
 // Show alert message

@@ -48,27 +48,19 @@
             <div class="col-md-2">
                 <label for="programFilter" class="form-label">Program:</label>
                 <select id="programFilter" class="form-select" multiple>
-                    <option>mtw_ss</option>
-                    <option>vou_oth</option>
-                    <option>pb_alm</option>
-                    <option>pb_colm</option>
+                    <!-- Options will be populated dynamically from real data -->
                 </select>
             </div>
             <div class="col-md-2">
                 <label for="inspectorFilter" class="form-label">Inspector:</label>
                 <select id="inspectorFilter" class="form-select" multiple>
-                    <option>Bycha</option>
-                    <option>Ed</option>
-                    <option>Patricia</option>
+                    <!-- Options will be populated dynamically from real data -->
                 </select>
             </div>
             <div class="col-md-2">
                 <label for="cityFilter" class="form-label">City:</label>
                 <select id="cityFilter" class="form-select" multiple>
-                    <option>AT</option>
-                    <option>BL</option>
-                    <option>BR</option>
-                    <option>BU</option>
+                    <!-- Options will be populated dynamically from real data -->
                 </select>
             </div>
             <div class="col-md-2">
@@ -186,7 +178,7 @@
             <div class="col-md-8">
                 <div class="card">
                     <div class="card-header bg-light">
-                        <h4>Program Performance</h4>
+                        <h4>Program Performance (Voucher Types)</h4>
                     </div>
                     <div class="card-body">
                         <div class="chart-container">
@@ -203,6 +195,37 @@
                     <div class="card-body">
                         <div class="chart-container">
                             <canvas id="cityChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Program Details Table -->
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <h4>Program Type Details (All Voucher Types)</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="programDetailsTable">
+                                <thead>
+                                    <tr>
+                                        <th>Program Code</th>
+                                        <th>Total Applications</th>
+                                        <th>Approved</th>
+                                        <th>Denied</th>
+                                        <th>Pending</th>
+                                        <th>Approval Rate</th>
+                                        <th>Avg Processing Days</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="programDetailsBody">
+                                    <!-- Data will be populated by JavaScript -->
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -240,11 +263,8 @@
                             <div class="col-md-4">
                                 <label for="programCode" class="form-label">Program Code</label>
                                 <select class="form-select" id="programCode" required>
-                                    <option value="">-- Select --</option>
-                                    <option value="mtw_ss">mtw_ss</option>
-                                    <option value="vou_oth">vou_oth</option>
-                                    <option value="pb_alm">pb_alm</option>
-                                    <option value="pb_colm">pb_colm</option>
+                                    <option value="">-- Select Program --</option>
+                                    <!-- Options will be populated dynamically from real data -->
                                 </select>
                             </div>
                             <div class="col-md-4">

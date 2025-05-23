@@ -21302,21 +21302,17 @@
   ],
   "lookup_values": {
     "miType": [
-      "Inital",
-      "Initial", 
-      "Reloc",
-      "inital",
-      "reloc"
+      "Initial",
+      "Reloc"
     ],
     "prog code": [
-      "EHV",
-      "Mainstream",
       "ehv",
       "ehv_bpv",
       "fup_old",
       "fupf_09",
       "fupy_09",
       "fyi_2022",
+      "mainstream",
       "mtw_hrp",
       "mtw_ss",
       "sayat_18",
