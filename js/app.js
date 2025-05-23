@@ -677,6 +677,8 @@ function populateFilterDropdowns() {
 function applyFilters() {
     if (!app.data) return;
     
+    console.log('🔍 Applying filters:', app.filters);
+    
     app.filteredData = app.data.main_data.filter(record => {
         // Date filter
         if (app.filters.dateRange) {
@@ -694,7 +696,7 @@ function applyFilters() {
         
         // Program filter
         if (app.filters.programs.length > 0) {
-            if (!app.filters.programs.includes(record['Program code'])) {
+            if (!app.filters.programs.includes(record['Program'])) {
                 return false;
             }
         }
@@ -736,10 +738,13 @@ function applyFilters() {
     // Reset pagination
     app.pagination.currentPage = 1;
     
+    console.log(`📊 Filtered data: ${app.filteredData.length} records (from ${app.data.main_data.length} total)`);
+    
     // Update UI
     updateDashboard();
     updateCharts();
     populateDataTable();
+    populateProgramDetailsTable();
 }
 
 // Reset all filters
